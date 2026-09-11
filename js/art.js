@@ -22,12 +22,25 @@
   ART.rng = rng;
 
   const layers = {};
+  let SCALE = 1;   // во сколько раз холст крупнее логических 960x540
+  // при смене масштаба перерисовываем кэш, чтобы текстуры оставались чёткими
+  ART.setScale = function (k) {
+    k = Math.max(1, Math.min(2, k || 1));
+    if (Math.abs(k - SCALE) < 0.02) return;
+    SCALE = k;
+    for (const key in layers) delete layers[key];
+    for (const key in spriteCache) delete spriteCache[key];
+  };
+  ART.scale = function () { return SCALE; };
   function layer(key, w, h, fn) {
-    if (layers[key]) return layers[key];
+    const ck = key + '@' + SCALE.toFixed(2);
+    if (layers[ck]) return layers[ck];
     const cv = document.createElement('canvas');
-    cv.width = w; cv.height = h;
-    fn(cv.getContext('2d'), w, h);
-    layers[key] = cv;
+    cv.width = Math.round(w * SCALE); cv.height = Math.round(h * SCALE);
+    const c = cv.getContext('2d');
+    c.scale(cv.width / w, cv.height / h);
+    fn(c, w, h);
+    layers[ck] = cv;
     return cv;
   }
 
@@ -175,12 +188,15 @@
 
   const spriteCache = {};
   const OUTLINE = 'rgba(18,12,6,.85)';
-  function sprite(key, rows, pal, px) {
-    const ck = key + '#' + px;
+  function sprite(key, rows, pal, logicalPx) {
+    const ck = key + '#' + logicalPx + '@' + SCALE.toFixed(2);
     if (spriteCache[ck]) return spriteCache[ck];
+    const px = Math.max(1, Math.round(logicalPx * SCALE));
     const w = rows[0].length, h = rows.length;
     const cv = document.createElement('canvas');
     cv.width = (w + 2) * px; cv.height = (h + 2) * px;   // рамка в одну клетку под контур
+    cv.logicalW = (w + 2) * logicalPx;
+    cv.logicalH = (h + 2) * logicalPx;
     const c = cv.getContext('2d');
     const solid = function (x, y) {
       if (x < 0 || y < 0 || x >= w || y >= h) return false;
@@ -214,15 +230,16 @@
   }
 
   function drawSprite(ctx, cv, x, y, flip, px) {
+    const w = cv.logicalW, h = cv.logicalH;
     ctx.save();
     ctx.imageSmoothingEnabled = false;
-    const dy = Math.round(y - cv.height + px);   // «ноги» стоят на y
+    const dy = Math.round(y - h + px);   // «ноги» стоят на y
     if (flip) {
       ctx.translate(Math.round(x), 0);
       ctx.scale(-1, 1);
-      ctx.drawImage(cv, -Math.round(cv.width / 2), dy);
+      ctx.drawImage(cv, -Math.round(w / 2), dy, w, h);
     } else {
-      ctx.drawImage(cv, Math.round(x - cv.width / 2), dy);
+      ctx.drawImage(cv, Math.round(x - w / 2), dy, w, h);
     }
     ctx.restore();
   }
@@ -716,7 +733,7 @@
       sh.addColorStop(1, 'rgba(24,48,28,0)');
       c.fillStyle = sh; c.fillRect(0, 342, w, 62);
     });
-    ctx.drawImage(bg, 0, 0);
+    ctx.drawImage(bg, 0, 0, G.W, G.H);
 
     // анимация: колышущаяся трава на переднем плане и солнечные пятна
     ctx.save();
@@ -805,7 +822,7 @@
         c.beginPath(); c.ellipse(x - rr2 * .2, y - rr2 * .25, rr2 * .5, rr2 * .3, 0, 0, 7); c.fill();
       }
     });
-    ctx.drawImage(bg, 0, 0);
+    ctx.drawImage(bg, 0, 0, G.W, G.H);
     // марево
     ctx.save();
     for (let i = 0; i < 7; i++) {
@@ -901,7 +918,7 @@
       }
       c.fillStyle = 'rgba(0,0,0,.35)'; c.fillRect(0, 438, w, 5);
     });
-    ctx.drawImage(bg, 0, 0);
+    ctx.drawImage(bg, 0, 0, G.W, G.H);
 
     // факелы
     for (let i = 0; i < 3; i++) {
@@ -986,7 +1003,7 @@
       vg.addColorStop(1, 'rgba(0,0,0,.75)');
       c.fillStyle = vg; c.fillRect(0, 0, w, h);
     });
-    ctx.drawImage(bg, 0, 0);
+    ctx.drawImage(bg, 0, 0, G.W, G.H);
   };
 
   /* луч света из дырки */
@@ -1235,9 +1252,9 @@
     });
     const off = ((scroll % 320) + 320) % 320;
     ctx.save();
-    ctx.drawImage(tile, cx - halfW, off - 320);
-    ctx.drawImage(tile, cx - halfW, off);
-    ctx.drawImage(tile, cx - halfW, off + 320);
+    ctx.drawImage(tile, cx - halfW, off - 320, halfW * 2, 320);
+    ctx.drawImage(tile, cx - halfW, off, halfW * 2, 320);
+    ctx.drawImage(tile, cx - halfW, off + 320, halfW * 2, 320);
     // объём ствола
     const vg = ctx.createLinearGradient(cx - halfW, 0, cx + halfW, 0);
     vg.addColorStop(0, 'rgba(0,0,0,.55)');

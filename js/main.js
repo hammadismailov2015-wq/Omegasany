@@ -64,7 +64,12 @@
       if (G.btn(G.W / 2 - 150, 442, 145, 42, 'Коллекция', { size: 16 })) G.go('collection');
       if (G.btn(G.W / 2 + 5, 442, 145, 42, G.muted ? 'Звук: выкл' : 'Звук: вкл', { size: 16 })) G.muted = !G.muted;
 
-      G.text('← → ↑ ↓ — движение · Пробел — действие · Esc — пауза', G.W / 2, 516, { size: 15, align: 'center', color: '#cfd8e3' });
+      if (G.fullscreenAvailable() &&
+          G.btn(G.W - 196, 20, 176, 38, G.isFullscreen() ? 'Выйти (F)' : '⛶  На весь экран', { size: 15 })) {
+        G.toggleFullscreen();
+      }
+      G.text('← → ↑ ↓ — движение · Пробел — действие · F — весь экран · Esc — пауза',
+        G.W / 2, 516, { size: 15, align: 'center', color: '#cfd8e3' });
       ART.omega(ctx, 140, 470, 1.3, {});
       ART.sanya(ctx, 820, 470, 1.3, { flip: true, cactus: true });
     }

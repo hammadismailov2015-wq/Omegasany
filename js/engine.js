@@ -59,6 +59,55 @@
     };
   }
 
+  /* ---------- масштаб холста и полный экран ---------- */
+  G.k = 1;
+  G.resize = function () {
+    if (!G.canvas) return;
+    const rect = G.canvas.getBoundingClientRect();
+    const cssW = rect.width || W;
+    let k = (cssW / W) * (window.devicePixelRatio || 1);
+    k = Math.max(1, Math.min(2, k));
+    if (window.ART && ART.setScale) ART.setScale(k);
+    k = (window.ART && ART.scale) ? ART.scale() : k;
+    const bw = Math.round(W * k), bh = Math.round(H * k);
+    if (G.canvas.width !== bw || G.canvas.height !== bh) {
+      G.canvas.width = bw; G.canvas.height = bh;
+    }
+    G.k = k;
+  };
+  G.isFullscreen = function () {
+    return !!(document.fullscreenElement || document.webkitFullscreenElement);
+  };
+  G.fullscreenAvailable = function () {
+    const el = document.getElementById('stage') || document.documentElement;
+    return !!(el.requestFullscreen || el.webkitRequestFullscreen);
+  };
+  // на телефоне игре удобнее в альбомной ориентации (где браузер это разрешает)
+  function lockLandscape() {
+    try {
+      const coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+      if (coarse && screen.orientation && screen.orientation.lock) {
+        const r = screen.orientation.lock('landscape');
+        if (r && r.catch) r.catch(function () {});
+      }
+    } catch (e) { /* не поддерживается — не беда */ }
+  }
+  G.toggleFullscreen = function () {
+    const el = document.getElementById('stage') || document.documentElement;
+    try {
+      if (G.isFullscreen()) {
+        const exit = document.exitFullscreen || document.webkitExitFullscreen;
+        if (exit) { const r = exit.call(document); if (r && r.catch) r.catch(function () {}); }
+      } else {
+        const req = el.requestFullscreen || el.webkitRequestFullscreen;
+        if (req) {
+          const r = req.call(el, { navigationUI: 'hide' });
+          if (r && r.then) r.then(lockLandscape, function () {}); else lockLandscape();
+        }
+      }
+    } catch (e) { /* браузер не разрешил — играем в окне */ }
+  };
+
   G.init = function () {
     G.canvas = document.getElementById('game');
     G.canvas.width = W; G.canvas.height = H;
@@ -67,7 +116,9 @@
 
     window.addEventListener('keydown', function (e) {
       if (KEYS_BLOCK.indexOf(e.code) >= 0) e.preventDefault();
+      if (e.code === 'KeyF') { G.toggleFullscreen(); return; }
       if (e.code === 'Escape') {
+        if (G.isFullscreen()) return;   // Esc выходит из полного экрана
         const menus = ['menu', 'chapters', 'collection', 'outro', 'final'];
         if (menus.indexOf(G.sceneName) >= 0) { keyDown('Escape'); return; }
         G.paused = !G.paused; return;
@@ -109,11 +160,20 @@
       btn.addEventListener('mouseleave', off);
     });
 
+    const onResize = function () { G.resize(); };
+    window.addEventListener('resize', onResize);
+    window.addEventListener('orientationchange', onResize);
+    document.addEventListener('fullscreenchange', onResize);
+    document.addEventListener('webkitfullscreenchange', onResize);
+    const fsBtn = document.getElementById('fs');
+    if (fsBtn) fsBtn.addEventListener('click', function () { G.toggleFullscreen(); });
+    G.resize();
+
     requestAnimationFrame(loop);
   };
 
   /* ---------- цикл ---------- */
-  let last = 0;
+  let last = 0, frame = 0;
   function loop(ts) {
     let dt = (ts - last) / 1000;
     if (!last || !isFinite(dt) || dt < 0) dt = 0;
@@ -121,7 +181,11 @@
     last = ts;
     G.time += dt;
 
+    frame++;
+    if (frame % 20 === 0) G.resize();   // страховка, если событие resize не пришло
+
     const ctx = G.ctx;
+    ctx.setTransform(G.k, 0, 0, G.k, 0, 0);
     if (G.scene) {
       if (!G.paused && G.scene.update) G.scene.update(dt);
       if (G.scene.draw) G.scene.draw(ctx);
@@ -140,8 +204,11 @@
     G.text('Esc — продолжить', W / 2, 235, { size: 18, align: 'center', color: '#cfd8e3' });
     if (G.btn(W / 2 - 110, 280, 220, 44, 'Продолжить')) G.paused = false;
     if (G.btn(W / 2 - 110, 336, 220, 44, 'В главное меню')) { G.paused = false; G.go('menu'); }
-    G.text(G.muted ? 'Звук: выкл' : 'Звук: вкл', W / 2, 412, { size: 16, align: 'center', color: '#9fb0c2' });
-    if (G.btn(W / 2 - 80, 424, 160, 34, G.muted ? 'Включить звук' : 'Выключить звук', { size: 14 })) G.muted = !G.muted;
+    if (G.fullscreenAvailable() &&
+        G.btn(W / 2 - 110, 392, 220, 38, G.isFullscreen() ? 'Выйти из полного экрана' : 'На весь экран (F)', { size: 15 })) {
+      G.toggleFullscreen();
+    }
+    if (G.btn(W / 2 - 80, 442, 160, 34, G.muted ? 'Включить звук' : 'Выключить звук', { size: 14 })) G.muted = !G.muted;
   }
 
   /* ---------- сцены ---------- */

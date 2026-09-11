@@ -9,32 +9,39 @@
 </head>
 <body>
   <div id="wrap">
-    <canvas id="game" width="960" height="540"></canvas>
+    <div id="stage">
+      <canvas id="game" width="960" height="540"></canvas>
 
-    <div id="pad">
-      <div class="dpad">
-        <button data-key="ArrowUp" class="k">↑</button>
-        <div class="row">
-          <button data-key="ArrowLeft" class="k">←</button>
-          <button data-key="ArrowDown" class="k">↓</button>
-          <button data-key="ArrowRight" class="k">→</button>
+      <div id="pad">
+        <div class="dpad">
+          <button data-key="ArrowUp" class="k">↑</button>
+          <div class="row">
+            <button data-key="ArrowLeft" class="k">←</button>
+            <button data-key="ArrowDown" class="k">↓</button>
+            <button data-key="ArrowRight" class="k">→</button>
+          </div>
         </div>
-      </div>
-      <div class="acts">
-        <button data-key="Space" class="k big">действие</button>
-        <div class="row">
-          <button data-key="Digit1" class="k">1</button>
-          <button data-key="Digit2" class="k">2</button>
-          <button data-key="Digit3" class="k">3</button>
-          <button data-key="Digit4" class="k">4</button>
-          <button data-key="KeyS" class="k">спать</button>
+        <div class="acts">
+          <button data-key="Space" class="k big">действие</button>
+          <div class="row">
+            <button data-key="Digit1" class="k">1</button>
+            <button data-key="Digit2" class="k">2</button>
+            <button data-key="Digit3" class="k">3</button>
+            <button data-key="Digit4" class="k">4</button>
+            <button data-key="KeyS" class="k">спать</button>
+          </div>
         </div>
       </div>
     </div>
 
+    <div id="bar">
+      <button id="fs" type="button" class="ui">⛶ На весь экран</button>
+    </div>
+
     <div id="help">
       <b>Управление:</b> ← → ↑ ↓ — ходить · <b>Пробел</b> — действие/удар/пропустить реплику ·
-      <b>1 2 3 4</b> — выбор · <b>S</b> — поспать в бочке · <b>Esc</b> — пауза.
+      <b>1 2 3 4</b> — выбор · <b>S</b> — поспать в бочке ·
+      <b>F</b> — во весь экран · <b>Esc</b> — пауза.
       Прогресс сохраняется в браузере.
     </div>
   </div>
