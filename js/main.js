@@ -29,7 +29,11 @@
     enter: function () { this.t = 0; },
     update: function (dt) {
       this.t += dt;
-      if (G.just['Space'] || G.just['Enter']) G.startChapter(Math.min(G.save.chapter, 10));
+      if (G.just['Space'] || G.just['Enter']) G.startChapter(this.target());
+    },
+    // куда ведёт главная кнопка: пройденную игру начинаем заново с первой главы
+    target: function () {
+      return G.save.flags.finished ? 1 : Math.min(G.save.chapter, 10);
     },
     draw: function (ctx) {
       ART.forestBg(ctx, this.t);
@@ -51,11 +55,12 @@
       G.text('ОМЕГА И ЕГО КАМНИ', G.W / 2, 262, { size: 54, align: 'center', color: '#ffe9b0' });
       G.text('игра по рассказу в десяти главах', G.W / 2, 296, { size: 19, align: 'center', color: '#e6eef8' });
 
+      const done = !!G.save.flags.finished;
       const prog = Math.min(G.save.chapter, 10);
-      const label = G.save.flags.finished ? 'Играть заново' :
+      const label = done ? 'Играть заново — с 1 главы' :
         (G.save.chapter > 1 ? 'Продолжить — глава ' + prog : 'Начать игру');
-      if (G.btn(G.W / 2 - 150, 330, 300, 52, label, { size: 21 })) G.startChapter(prog);
-      if (G.btn(G.W / 2 - 150, 392, 300, 42, 'Выбор главы')) G.go('chapters');
+      if (G.btn(G.W / 2 - 150, 330, 300, 52, label, { size: done ? 18 : 21 })) G.startChapter(this.target());
+      if (G.btn(G.W / 2 - 150, 392, 300, 42, done ? 'Выбор главы (пройдено всё)' : 'Выбор главы', { size: done ? 16 : 17 })) G.go('chapters');
       if (G.btn(G.W / 2 - 150, 442, 145, 42, 'Коллекция', { size: 16 })) G.go('collection');
       if (G.btn(G.W / 2 + 5, 442, 145, 42, G.muted ? 'Звук: выкл' : 'Звук: вкл', { size: 16 })) G.muted = !G.muted;
 
@@ -86,7 +91,7 @@
         }
       }
       if (G.btn(G.W / 2 - 100, 466, 200, 44, 'Назад')) G.go('menu');
-      if (G.btn(G.W - 190, 24, 166, 34, 'Сбросить прогресс', { size: 14 })) { G.reset(); }
+      if (G.btn(G.W - 190, 24, 166, 34, 'Сбросить прогресс', { size: 14 })) { G.reset(); G.go('menu'); }
     }
   };
 
