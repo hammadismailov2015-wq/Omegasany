@@ -80,7 +80,7 @@
       this.mode = 'intro';
       this.data = 0;            // собранные данные слежки
       this.susp = 0;            // подозрение Сани
-      this.sx = 300; this.sdir = 1;
+      this.sx = 420; this.sdir = 1;
       this.turn = 0;            // 0 — идёт, 1 — оборачивается
       this.turnT = G.rnd(2, 3.5);
       this.warn = 0;
@@ -102,8 +102,8 @@
       if (this.mode === 'spy') {
         this.hidden = G.keys['Space'] || G.mouse.down;
         this.sx += this.sdir * dt * (this.turn ? 0 : 70);
-        if (this.sx > 780) { this.sx = 780; this.sdir = -1; }
-        if (this.sx < 180) { this.sx = 180; this.sdir = 1; }
+        if (this.sx > 800) { this.sx = 800; this.sdir = -1; }
+        if (this.sx < 340) { this.sx = 340; this.sdir = 1; }
 
         this.turnT -= dt;
         if (this.turnT <= 0) {
@@ -164,29 +164,43 @@
     },
     draw: function (ctx) {
       ART.forestBg(ctx, this.t);
-      // логово с крышей
-      ctx.fillStyle = '#3a2c1e';
-      ctx.beginPath(); ctx.ellipse(470, 420, 60, 28, 0, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = '#53422f'; ctx.fillRect(420, 414, 100, 8);
-      G.text('вход в логово', 470, 392, { size: 13, align: 'center', color: '#ffe9b0' });
+      ART.tree(ctx, 880, 452, 1.0, 31);
+      ART.lairEntrance(ctx, 470, 424, 1.1);
+      G.text('вход в логово', 470, 384, { size: 13, align: 'center', color: '#ffe9b0' });
 
       if (this.mode === 'spy') {
         // Омега прячется за толстым деревом
-        ART.omega(ctx, this.hidden ? 128 : 232, 486, 1.15, { flip: false });
-        ctx.fillStyle = '#4a3421';
-        ctx.fillRect(92, 250, 76, 250);
-        ctx.fillStyle = 'rgba(30,20,10,.35)';
-        ctx.fillRect(148, 250, 20, 250);
-        for (let i = 0; i < 3; i++) {
-          ctx.fillStyle = ['#2f6b3c', '#3b8148', '#4a9755'][i];
-          ctx.beginPath();
-          ctx.ellipse(130, 250 - i * 34, 110 - i * 22, 58 - i * 8, 0, 0, Math.PI * 2); ctx.fill();
+        ART.omega(ctx, this.hidden ? 126 : 236, 492, 1.15, { flip: false });
+        // толстое дерево переднего плана
+        const tg = ctx.createLinearGradient(88, 0, 172, 0);
+        tg.addColorStop(0, '#2a1b0e'); tg.addColorStop(.38, '#7b552f');
+        tg.addColorStop(.7, '#5c3d20'); tg.addColorStop(1, '#22150a');
+        ctx.fillStyle = tg;
+        ctx.beginPath();
+        ctx.moveTo(84, 512);
+        ctx.quadraticCurveTo(96, 360, 92, 240);
+        ctx.lineTo(168, 240);
+        ctx.quadraticCurveTo(164, 360, 178, 512);
+        ctx.closePath(); ctx.fill();
+        ctx.strokeStyle = 'rgba(24,14,6,.5)'; ctx.lineWidth = 2;
+        for (let i = 0; i < 9; i++) {
+          const bx = 96 + i * 8;
+          ctx.beginPath(); ctx.moveTo(bx, 250); ctx.quadraticCurveTo(bx + 4, 370, bx - 2, 500); ctx.stroke();
         }
+        [['#1b4326', 8, 10, 1], ['#2d6a37', 0, 0, .95], ['#4b9450', -10, -12, .68], ['#6cb662', -20, -22, .36]]
+          .forEach(function (q) {
+            ctx.fillStyle = q[0];
+            [[130, 236], [74, 268], [186, 262], [150, 196], [96, 200]].forEach(function (b) {
+              ctx.beginPath();
+              ctx.ellipse(b[0] + q[1], b[1] + q[2], 62 * q[3], 44 * q[3], 0, 0, Math.PI * 2);
+              ctx.fill();
+            });
+          });
         if (this.hidden) { // подглядывает из-за ствола
-          ctx.fillStyle = '#f6d3ab';
-          ctx.beginPath(); ctx.ellipse(176, 424, 12, 14, 0, 0, Math.PI * 2); ctx.fill();
-          ctx.fillStyle = '#2b2b33';
-          ctx.beginPath(); ctx.arc(178, 421, 2.4, 0, 7); ctx.fill();
+          ctx.fillStyle = '#f3cda3';
+          ctx.fillRect(178, 424, 14, 16);
+          ctx.fillStyle = '#241d16';
+          ctx.fillRect(184, 428, 4, 4);
         }
         ART.sanya(ctx, this.sx, 470, 1.2, { flip: this.turn ? false : this.sdir < 0, pose: this.turn ? 'stand' : 'walk', frame: this.t * 9, smug: true });
         if (this.warn > 0 && !this.turn) {
@@ -210,8 +224,18 @@
         ART.barrel(ctx, 620, 470, 0.8, { hole: 1 });
         if (this.banana) {
           ctx.save(); ctx.translate(this.banana[0], this.banana[1]);
-          ctx.fillStyle = '#ffd94a';
-          ctx.beginPath(); ctx.ellipse(0, 0, 22, 9, 0.3, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = 'rgba(0,0,0,.25)';
+          ctx.beginPath(); ctx.ellipse(0, 6, 20, 5, 0, 0, Math.PI * 2); ctx.fill();
+          const bg3 = ctx.createLinearGradient(0, -10, 0, 8);
+          bg3.addColorStop(0, '#ffe97a'); bg3.addColorStop(.6, '#f2c42f'); bg3.addColorStop(1, '#b8880f');
+          ctx.fillStyle = bg3;
+          ctx.beginPath();
+          ctx.moveTo(-22, 2);
+          ctx.quadraticCurveTo(0, -16, 22, 0);
+          ctx.quadraticCurveTo(2, -6, -22, 2);
+          ctx.closePath(); ctx.fill();
+          ctx.fillStyle = '#6b4a1e';
+          ctx.fillRect(20, -2, 5, 4);
           ctx.restore();
         }
         if (this.mode === 'trap') {
@@ -335,8 +359,8 @@
     draw: function (ctx) {
       ART.lairBg(ctx, this.t);
       ART.table(ctx, 470, 300, .8, G.save.stones.slice(0, 5));
-      ART.omega(ctx, 210, 396, 1.25, {});
-      ART.sanya(ctx, 750, 396, 1.25, { flip: true, cactus: false });
+      ART.omega(ctx, 190, 400, 1.3, {});
+      ART.sanya(ctx, 770, 400, 1.3, { flip: true });
       G.text('Раунд ' + Math.min(this.round, 5) + ' / 5', G.W / 2, 44, { size: 20, align: 'center', color: '#ffe9b0' });
       G.text(this.mode === 'play' ? 'Саня мяукает — слушай' :
         (this.mode === 'repeat' ? 'Повторяй!' : ' '), G.W / 2, 72, { size: 17, align: 'center', color: '#cfd8e3' });
@@ -384,9 +408,9 @@
     draw: function (ctx) {
       ART.forestBg(ctx, this.t);
       ctx.fillStyle = 'rgba(10,14,20,.55)'; ctx.fillRect(0, 0, G.W, G.H);
-      ART.omega(ctx, 380, 420, 1.4, {});
-      ART.sanya(ctx, 580, 420, 1.4, { flip: true, cactus: true });
-      ART.stone(ctx, 430, 436, 18, DATA.balid.color, { face: true });
+      ART.omega(ctx, 372, 424, 1.5, {});
+      ART.sanya(ctx, 592, 424, 1.5, { flip: true, cactus: true });
+      ART.stone(ctx, 432, 440, 18, DATA.balid.color, { face: true });
       G.text('КОНЕЦ', G.W / 2, 130, { size: 56, align: 'center', color: '#ffe9b0' });
       G.text('И так они продолжали дружить и полемить.', G.W / 2, 176, { size: 22, align: 'center', color: '#f2ecdf' });
       G.text('Камней в коллекции: ' + (G.save.stones ? G.save.stones.length : 0), G.W / 2, 470, { size: 20, align: 'center', color: '#a8d8a8' });

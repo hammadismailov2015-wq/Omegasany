@@ -33,7 +33,12 @@
     },
     draw: function (ctx) {
       ART.forestBg(ctx, this.t);
-      ctx.fillStyle = 'rgba(10,14,20,.45)'; ctx.fillRect(0, 0, G.W, G.H);
+      // мягкая подложка под текст, чтобы лес остался светлым
+      const veil = ctx.createLinearGradient(0, 200, 0, G.H);
+      veil.addColorStop(0, 'rgba(8,14,20,0)');
+      veil.addColorStop(.28, 'rgba(8,14,20,.55)');
+      veil.addColorStop(1, 'rgba(8,14,20,.45)');
+      ctx.fillStyle = veil; ctx.fillRect(0, 180, G.W, G.H - 180);
 
       // летающие камушки
       for (let i = 0; i < 7; i++) {
@@ -69,7 +74,7 @@
     },
     draw: function (ctx) {
       ART.forestBg(ctx, this.t);
-      ctx.fillStyle = 'rgba(10,14,20,.6)'; ctx.fillRect(0, 0, G.W, G.H);
+      ctx.fillStyle = 'rgba(10,14,20,.52)'; ctx.fillRect(0, 0, G.W, G.H);
       G.text('ВЫБОР ГЛАВЫ', G.W / 2, 66, { size: 34, align: 'center', color: '#ffe9b0' });
       for (let i = 0; i < G.CHAPTERS.length; i++) {
         const c = G.CHAPTERS[i];
@@ -128,7 +133,7 @@
     },
     draw: function (ctx) {
       ART.forestBg(ctx, this.t);
-      ctx.fillStyle = 'rgba(10,14,20,.6)'; ctx.fillRect(0, 0, G.W, G.H);
+      ctx.fillStyle = 'rgba(10,14,20,.52)'; ctx.fillRect(0, 0, G.W, G.H);
       const c = G.CHAPTERS[this.n - 1];
       G.text('Глава ' + c.n + ' пройдена', G.W / 2, 200, { size: 40, align: 'center', color: '#ffe9b0' });
       G.text('«' + c.name + '»', G.W / 2, 244, { size: 24, align: 'center', color: '#f2ecdf' });

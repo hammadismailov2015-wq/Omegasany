@@ -147,45 +147,30 @@
       ctx.save();
       if (this.shake > 0) ctx.translate(G.rnd(-5, 5), G.rnd(-5, 5));
       // внутренность бочки
-      ctx.fillStyle = '#241a12'; ctx.fillRect(0, 0, G.W, G.H);
-      const grd = ctx.createLinearGradient(0, 0, G.W, 0);
-      grd.addColorStop(0, '#1b1209'); grd.addColorStop(.5, '#5b4227'); grd.addColorStop(1, '#1b1209');
-      ctx.fillStyle = grd; ctx.fillRect(60, 0, G.W - 120, G.H);
-      ctx.strokeStyle = 'rgba(10,6,4,.7)'; ctx.lineWidth = 3;
-      for (let i = 0; i < 12; i++) {
-        const x = 80 + i * 68;
-        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x + (x - G.W / 2) * 0.05, G.H); ctx.stroke();
-      }
-      // свет из дырки
+      ART.barrelInside(ctx, this.t);
       const hole = this.progress / 100;
       if (hole > 0.12) {
-        const hx = 700, hy = 250, r = 6 + hole * 78;
-        const lg = ctx.createRadialGradient(hx, hy, 2, hx, hy, r * 3);
-        lg.addColorStop(0, 'rgba(255,246,200,.95)');
-        lg.addColorStop(.35, 'rgba(255,220,140,.35)');
-        lg.addColorStop(1, 'rgba(255,220,140,0)');
-        ctx.fillStyle = lg;
-        ctx.beginPath(); ctx.arc(hx, hy, r * 3, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = '#fff3c8';
-        ctx.beginPath(); ctx.ellipse(hx, hy, r * 0.7, r * 0.55, 0.3, 0, Math.PI * 2); ctx.fill();
+        ART.holeLight(ctx, 700, 250, hole, this.t);
       } else if (hole > 0.02) {
-        ctx.strokeStyle = 'rgba(255,240,190,' + (hole * 6) + ')'; ctx.lineWidth = 2;
-        ctx.beginPath(); ctx.moveTo(690, 210); ctx.lineTo(712, 286); ctx.stroke();
+        ctx.strokeStyle = 'rgba(255,240,190,' + (hole * 6) + ')'; ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.moveTo(690, 206); ctx.quadraticCurveTo(706, 250, 712, 292); ctx.stroke();
       }
       // гвоздь
-      ctx.strokeStyle = '#b9bec7'; ctx.lineWidth = 5;
-      ctx.beginPath(); ctx.moveTo(620, 150); ctx.lineTo(632, 168); ctx.stroke();
+      ctx.strokeStyle = '#aeb4bd'; ctx.lineWidth = 5;
+      ctx.beginPath(); ctx.moveTo(620, 150); ctx.lineTo(634, 170); ctx.stroke();
       ctx.fillStyle = '#d5d9e0';
-      ctx.beginPath(); ctx.arc(619, 148, 5, 0, 7); ctx.fill();
+      ctx.beginPath(); ctx.arc(619, 148, 6, 0, 7); ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,.6)';
+      ctx.beginPath(); ctx.arc(617, 146, 2, 0, 7); ctx.fill();
 
       // Омега рогаликом
       const sleepNow = this.sleeping > 0;
-      ART.omega(ctx, 300, 400, 1.45, { pose: 'ball', dirty: true, sleep: sleepNow });
+      ART.omega(ctx, 296, 412, 1.7, { pose: 'ball', dirty: true, sleep: sleepNow });
       // Лысый
-      ART.stone(ctx, 382, 410, 16, DATA.balid.color, { face: true, sad: this.guilt > 40 });
+      ART.stone(ctx, 398, 420, 17, DATA.balid.color, { face: true, sad: this.guilt > 40 });
       if (this.tool === 'stone') {
         ctx.strokeStyle = 'rgba(255,120,110,.8)'; ctx.lineWidth = 2;
-        ctx.beginPath(); ctx.arc(382, 404, 25, 0, Math.PI * 2); ctx.stroke();
+        ctx.beginPath(); ctx.arc(398, 414, 27, 0, Math.PI * 2); ctx.stroke();
       }
       ctx.restore();
 
@@ -296,15 +281,32 @@
       ], function () { G.finishChapter(5); });
     },
     draw: function (ctx) {
-      ctx.fillStyle = '#101828'; ctx.fillRect(0, 0, G.W, G.H);
+      const bgg = ctx.createRadialGradient(G.W / 2, G.H / 2, 60, G.W / 2, G.H / 2, 560);
+      bgg.addColorStop(0, '#1d2a3d'); bgg.addColorStop(1, '#080c14');
+      ctx.fillStyle = bgg; ctx.fillRect(0, 0, G.W, G.H);
       const cx = G.W / 2, cy = G.H / 2 - 10;
       // корпус машинки
-      ctx.fillStyle = '#dfe4ea';
-      G.rr(ctx, cx - 200, cy - 190, 400, 400, 20); ctx.fill();
-      ctx.fillStyle = '#c3c9d2';
-      G.rr(ctx, cx - 200, cy - 190, 400, 56, 16); ctx.fill();
-      ctx.fillStyle = '#4a5568';
-      ctx.beginPath(); ctx.arc(cx, cy + 10, 150, 0, Math.PI * 2); ctx.fill();
+      const body = ctx.createLinearGradient(cx - 200, 0, cx + 200, 0);
+      body.addColorStop(0, '#9fa8b4'); body.addColorStop(.35, '#eef2f6');
+      body.addColorStop(.75, '#cfd6de'); body.addColorStop(1, '#8b939f');
+      ctx.fillStyle = body;
+      G.rr(ctx, cx - 200, cy - 190, 400, 400, 22); ctx.fill();
+      const panel = ctx.createLinearGradient(0, cy - 190, 0, cy - 134);
+      panel.addColorStop(0, '#e4e9ef'); panel.addColorStop(1, '#aab2bd');
+      ctx.fillStyle = panel;
+      G.rr(ctx, cx - 200, cy - 190, 400, 56, 18); ctx.fill();
+      ctx.fillStyle = '#3d4655';
+      [-140, -104].forEach(function (dx) {
+        ctx.beginPath(); ctx.arc(cx + dx, cy - 162, 13, 0, 7); ctx.fill();
+      });
+      ctx.fillStyle = '#7fd18a';
+      ctx.beginPath(); ctx.arc(cx + 150, cy - 162, 7, 0, 7); ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,.45)';
+      ctx.fillRect(cx - 70, cy - 172, 170, 20);
+      const ring = ctx.createRadialGradient(cx - 40, cy - 30, 20, cx, cy + 10, 160);
+      ring.addColorStop(0, '#6b7686'); ring.addColorStop(1, '#2c3442');
+      ctx.fillStyle = ring;
+      ctx.beginPath(); ctx.arc(cx, cy + 10, 152, 0, Math.PI * 2); ctx.fill();
       // барабан
       ctx.save();
       ctx.beginPath(); ctx.arc(cx, cy + 10, 136, 0, Math.PI * 2); ctx.clip();
@@ -329,8 +331,12 @@
       ART.omega(ctx, 0, 34, 1.3, { pose: 'ball', dirty: true, sad: true });
       ctx.restore();
       ctx.restore();
-      ctx.strokeStyle = '#2d3748'; ctx.lineWidth = 10;
+      ctx.strokeStyle = '#222a36'; ctx.lineWidth = 10;
       ctx.beginPath(); ctx.arc(cx, cy + 10, 145, 0, Math.PI * 2); ctx.stroke();
+      // блик на стекле
+      ctx.fillStyle = 'rgba(255,255,255,.18)';
+      ctx.beginPath();
+      ctx.ellipse(cx - 52, cy - 44, 54, 34, -0.7, 0, Math.PI * 2); ctx.fill();
 
       ART.sanya(ctx, 96, 368, 1.15, { smug: true });
       G.text('Саня', 96, 392, { size: 14, align: 'center', color: '#ffd98a' });
@@ -439,7 +445,7 @@
     },
     draw: function (ctx) {
       // вид изнутри бочки на дырку
-      ctx.fillStyle = '#1a1310'; ctx.fillRect(0, 0, G.W, G.H);
+      ART.barrelInside(ctx, this.t);
       ctx.save();
       ctx.beginPath();
       ctx.ellipse(G.W / 2, 214, 300, 186, 0, 0, Math.PI * 2);
@@ -448,8 +454,12 @@
       ART.cactus(ctx, G.W / 2 - 200, 386, 0.9, { flower: true });
       ART.cactus(ctx, G.W / 2 + 205, 396, 0.75, {});
       ctx.restore();
-      ctx.strokeStyle = '#2a1d12'; ctx.lineWidth = 26;
+      const rim = ctx.createLinearGradient(0, 20, 0, 400);
+      rim.addColorStop(0, '#5a3d22'); rim.addColorStop(1, '#231609');
+      ctx.strokeStyle = rim; ctx.lineWidth = 28;
       ctx.beginPath(); ctx.ellipse(G.W / 2, 214, 300, 186, 0, 0, Math.PI * 2); ctx.stroke();
+      ctx.strokeStyle = 'rgba(255,228,170,.25)'; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.ellipse(G.W / 2, 214, 286, 173, 0, 0, Math.PI * 2); ctx.stroke();
 
       // кактус крупным планом с зонами
       const cx = G.W / 2, cy = 352;
@@ -570,7 +580,7 @@
           pose: stand ? 'stand' : (this.vert >= 3 ? 'crouch' : 'ball'),
           dirty: true
         });
-        ART.stone(ctx, 450, 486, 15, DATA.balid.color, { face: true });
+        ART.stone(ctx, 452, 492, 16, DATA.balid.color, { face: true });
         if (this.mode === 'stretch') {
           const bx = G.W / 2 - 180, by = G.H - 110, bw = 360, bh = 26;
           ctx.fillStyle = 'rgba(0,0,0,.6)'; ctx.fillRect(bx, by, bw, bh);

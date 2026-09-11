@@ -107,34 +107,15 @@
     draw: function (ctx) {
       ART.forestBg(ctx, this.t);
 
-      // песок
-      ctx.fillStyle = '#e2c58b';
-      ctx.beginPath(); ctx.ellipse(205, 475, 92, 36, 0, 0, Math.PI * 2); ctx.fill();
-      // речка
-      ctx.fillStyle = '#5aa8d8';
-      ctx.beginPath();
-      ctx.moveTo(380, 396); ctx.quadraticCurveTo(505, 372, 640, 400);
-      ctx.quadraticCurveTo(505, 442, 380, 420); ctx.fill();
-      ctx.strokeStyle = 'rgba(255,255,255,.5)'; ctx.lineWidth = 2;
-      for (let i = 0; i < 4; i++) {
-        const x = 410 + i * 60 + Math.sin(this.t * 2 + i) * 6;
-        ctx.beginPath(); ctx.moveTo(x, 404); ctx.lineTo(x + 22, 404); ctx.stroke();
-      }
-      // гора
-      ctx.fillStyle = '#8d8779';
-      ctx.beginPath(); ctx.moveTo(700, 512); ctx.lineTo(800, 420); ctx.lineTo(900, 512); ctx.fill();
-      ctx.fillStyle = '#a49d8d';
-      ctx.beginPath(); ctx.moveTo(760, 466); ctx.lineTo(800, 420); ctx.lineTo(840, 466); ctx.fill();
+      ART.sandPatch(ctx, 205, 478, 96, 38, 3);
+      ART.river(ctx, 505, 406, 172, 24, this.t);
+      ART.rockHill(ctx, 800, 512, 210, 96, 12);
 
       // деревья
-      ART.tree(ctx, 80, 400, 1); ART.tree(ctx, 320, 392, .9); ART.tree(ctx, 620, 386, .8);
+      ART.tree(ctx, 70, 404, 1.05, 2); ART.tree(ctx, 330, 394, .92, 5); ART.tree(ctx, 640, 388, .8, 9);
 
-      // вход в логово
-      ctx.fillStyle = '#3a2c1e';
-      ctx.beginPath(); ctx.ellipse(G.W - 80, 400, 46, 24, 0, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = '#53422f';
-      ctx.fillRect(G.W - 118, 396, 76, 8);
-      G.text('логово', G.W - 80, 372, { size: 14, align: 'center', color: '#ffe9b0' });
+      ART.lairEntrance(ctx, G.W - 80, 400, 1);
+      G.text('логово', G.W - 80, 366, { size: 14, align: 'center', color: '#ffe9b0' });
 
       // подсказки у мест
       const self = this;
@@ -146,7 +127,7 @@
       });
 
       const p = this.player;
-      const sc = 0.75 + (p.y - 392) / 420;
+      const sc = 0.70 + (p.y - 392) / 520;
       ART.omega(ctx, p.x, p.y, sc, { pose: p.frame ? 'walk' : 'stand', frame: p.frame, flip: p.flip });
 
       // HUD
@@ -306,14 +287,22 @@
       }
     },
     draw: function (ctx) {
-      // логово Сани
-      ctx.fillStyle = '#2e2a20'; ctx.fillRect(0, 0, G.W, G.H);
-      ctx.fillStyle = '#3e3627'; ctx.fillRect(0, 120, G.W, G.H - 120);
-      ctx.fillStyle = ART.skyGrad(ctx, '#8fd3e8', '#c6e6cf', 120); ctx.fillRect(0, 0, G.W, 120);
-      ctx.fillStyle = '#5aa05f'; ctx.fillRect(0, 104, G.W, 20);
-      for (let i = 0; i < 6; i++) ART.cactus(ctx, 70 + i * 165, 268, 0.5 + (i % 3) * 0.12, { pot: true, flower: i % 2 === 0 });
-      ART.omega(ctx, 250, 262, 1.15, {});
-      ART.sanya(ctx, 700, 262, 1.15, { flip: true, smug: true });
+      // логово Сани — кактусы на полке
+      ART.lairBg(ctx, this.t);
+      ctx.fillStyle = 'rgba(12,10,6,.4)'; ctx.fillRect(0, 120, G.W, G.H - 120);
+      // полка
+      const shelfY = 196;
+      const sg2 = ctx.createLinearGradient(0, shelfY, 0, shelfY + 12);
+      sg2.addColorStop(0, '#a67a43'); sg2.addColorStop(1, '#5f4022');
+      ctx.fillStyle = sg2; ctx.fillRect(250, shelfY, 460, 12);
+      ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.fillRect(250, shelfY + 10, 460, 4);
+      for (let i = 0; i < 5; i++) {
+        ART.cactus(ctx, 292 + i * 106, shelfY, 0.3 + (i % 3) * 0.05, { pot: true, flower: i % 2 === 0 });
+      }
+      ART.omega(ctx, 140, 208, 1.05, {});
+      ART.sanya(ctx, 820, 208, 1.05, { flip: true });
+      ART.cactus(ctx, 720, 208, 0.42, { pot: true, flower: true });
+      G.text('4,6', 720, 224, { size: 12, align: 'center', color: '#c9b08a' });
 
       // шкалы гордости
       G.bar(60, 40, 300, 18, this.pridO / 100, { color: '#6ec07a', label: 'Гордость Омеги' });
@@ -447,31 +436,44 @@
       ctx.fillRect(0, 0, G.W, G.H);
       // облака
       for (let i = 0; i < 5; i++) {
-        const cy = ((i * 190 + this.scroll * 0.25) % 700) - 80;
-        ctx.fillStyle = 'rgba(255,255,255,.75)';
+        const cy = ((i * 190 + this.scroll * 0.25) % 760) - 100;
+        const cxx = 110 + i * 180;
         ctx.beginPath();
-        ctx.ellipse(120 + i * 180, cy, 54, 22, 0, 0, Math.PI * 2); ctx.fill();
+        for (let k = 0; k < 6; k++) {
+          const ex = cxx + (k - 2.5) * 24, ey = cy + Math.sin(k + i) * 6;
+          const rx = 32 - Math.abs(k - 2.5) * 6;
+          ctx.moveTo(ex + rx, ey);
+          ctx.ellipse(ex, ey, rx, 14, 0, 0, Math.PI * 2);
+        }
+        ctx.fillStyle = 'rgba(255,255,255,' + (0.5 + (i % 3) * 0.16) + ')';
+        ctx.fill();
       }
       const cx = G.W / 2;
-      // ствол
-      ctx.fillStyle = '#4a3421';
-      ctx.fillRect(cx - 90, 0, 180, G.H);
-      ctx.strokeStyle = 'rgba(20,12,6,.4)'; ctx.lineWidth = 3;
-      for (let i = 0; i < 8; i++) {
-        const y0 = ((i * 120 + this.scroll) % (G.H + 200)) - 100;
-        ctx.beginPath(); ctx.moveTo(cx - 70 + i * 20, y0); ctx.lineTo(cx - 60 + i * 20, y0 + 90); ctx.stroke();
-      }
+      ART.trunkWall(ctx, cx, 92, this.scroll);
       // ветки
       const self = this;
       this.branches.forEach(function (b) {
         const by = b.y + self.scroll;
         if (by < -60 || by > G.H + 60) return;
         ctx.strokeStyle = b.hit ? '#6d5333' : '#3c2a18';
-        ctx.lineWidth = 12; ctx.lineCap = 'round';
+        ctx.lineWidth = 13; ctx.lineCap = 'round';
         ctx.beginPath();
         ctx.moveTo(cx, by);
         ctx.lineTo(cx + b.side * b.len, by - 12);
         ctx.stroke();
+        ctx.strokeStyle = 'rgba(255,225,180,.16)'; ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(cx, by - 4);
+        ctx.lineTo(cx + b.side * b.len, by - 16);
+        ctx.stroke();
+        // листва на конце ветки
+        const lx = cx + b.side * b.len, ly = by - 12;
+        [['#1f4a2a', 0, 0, 1], ['#2f6b38', -3, -3, .8], ['#4b9450', -7, -7, .5]].forEach(function (q) {
+          ctx.fillStyle = q[0];
+          ctx.beginPath();
+          ctx.ellipse(lx + q[1], ly + q[2], 26 * q[3], 15 * q[3], 0, 0, Math.PI * 2);
+          ctx.fill();
+        });
         if (b.cherry) {
           ctx.fillStyle = '#b8283f';
           ctx.beginPath(); ctx.arc(cx + b.side * b.len, by - 6, 8, 0, 7); ctx.fill();
