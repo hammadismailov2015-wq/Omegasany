@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Омега и его камни — игра</title>
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>🪨</text></svg>">
+</head>
+<body>
+  <div id="wrap">
+    <canvas id="game" width="960" height="540"></canvas>
+
+    <div id="pad">
+      <div class="dpad">
+        <button data-key="ArrowUp" class="k">↑</button>
+        <div class="row">
+          <button data-key="ArrowLeft" class="k">←</button>
+          <button data-key="ArrowDown" class="k">↓</button>
+          <button data-key="ArrowRight" class="k">→</button>
+        </div>
+      </div>
+      <div class="acts">
+        <button data-key="Space" class="k big">действие</button>
+        <div class="row">
+          <button data-key="Digit1" class="k">1</button>
+          <button data-key="Digit2" class="k">2</button>
+          <button data-key="Digit3" class="k">3</button>
+          <button data-key="Digit4" class="k">4</button>
+          <button data-key="KeyS" class="k">спать</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="help">
+      <b>Управление:</b> ← → ↑ ↓ — ходить · <b>Пробел</b> — действие/удар/пропустить реплику ·
+      <b>1 2 3 4</b> — выбор · <b>S</b> — поспать в бочке · <b>Esc</b> — пауза.
+      Прогресс сохраняется в браузере.
+    </div>
+  </div>
+
+  <script src="js/engine.js"></script>
+  <script src="js/art.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/scenes_a.js"></script>
+  <script src="js/scenes_b.js"></script>
+  <script src="js/scenes_c.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
