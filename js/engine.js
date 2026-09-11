@@ -78,10 +78,22 @@
   G.isFullscreen = function () {
     return !!(document.fullscreenElement || document.webkitFullscreenElement);
   };
-  G.fullscreenAvailable = function () {
-    const el = document.getElementById('stage') || document.documentElement;
-    return !!(el.requestFullscreen || el.webkitRequestFullscreen);
+  function stageEl() { return document.getElementById('stage'); }
+  // запасной режим: игра растягивается на всю страницу (работает и там,
+  // где встроенной странице запрещён настоящий полный экран)
+  G.isMaxi = function () {
+    const el = stageEl();
+    return !!(el && el.classList.contains('maxi'));
   };
+  G.isBig = function () { return G.isFullscreen() || G.isMaxi(); };
+  function setMaxi(on) {
+    const el = stageEl();
+    if (!el) return;
+    el.classList.toggle('maxi', !!on);
+    document.documentElement.classList.toggle('maxi-lock', !!on);
+    G.resize();
+  }
+  G.fullscreenAvailable = function () { return !!stageEl(); };
   // на телефоне игре удобнее в альбомной ориентации (где браузер это разрешает)
   function lockLandscape() {
     try {
@@ -93,19 +105,28 @@
     } catch (e) { /* не поддерживается — не беда */ }
   }
   G.toggleFullscreen = function () {
-    const el = document.getElementById('stage') || document.documentElement;
-    try {
-      if (G.isFullscreen()) {
+    const el = stageEl() || document.documentElement;
+    // выключение
+    if (G.isFullscreen()) {
+      try {
         const exit = document.exitFullscreen || document.webkitExitFullscreen;
         if (exit) { const r = exit.call(document); if (r && r.catch) r.catch(function () {}); }
-      } else {
-        const req = el.requestFullscreen || el.webkitRequestFullscreen;
-        if (req) {
-          const r = req.call(el, { navigationUI: 'hide' });
-          if (r && r.then) r.then(lockLandscape, function () {}); else lockLandscape();
-        }
-      }
-    } catch (e) { /* браузер не разрешил — играем в окне */ }
+      } catch (e) { /* уже вышли */ }
+      setMaxi(false);
+      return;
+    }
+    if (G.isMaxi()) { setMaxi(false); return; }
+    // включение: сначала пробуем настоящий полный экран
+    const req = el.requestFullscreen || el.webkitRequestFullscreen;
+    const fallback = function () {
+      setMaxi(true);
+      G.notice('Полный экран здесь запрещён — растянул игру на всю страницу. Для настоящего открой игру в отдельной вкладке.', 5);
+    };
+    if (document.fullscreenEnabled === false || !req) { fallback(); return; }
+    try {
+      const r = req.call(el, { navigationUI: 'hide' });
+      if (r && r.then) r.then(lockLandscape, fallback); else lockLandscape();
+    } catch (e) { fallback(); }
   };
 
   G.init = function () {
@@ -119,6 +140,7 @@
       if (e.code === 'KeyF') { G.toggleFullscreen(); return; }
       if (e.code === 'Escape') {
         if (G.isFullscreen()) return;   // Esc выходит из полного экрана
+        if (G.isMaxi()) { G.toggleFullscreen(); return; }
         const menus = ['menu', 'chapters', 'collection', 'outro', 'final'];
         if (menus.indexOf(G.sceneName) >= 0) { keyDown('Escape'); return; }
         G.paused = !G.paused; return;
@@ -191,6 +213,7 @@
       if (G.scene.draw) G.scene.draw(ctx);
     }
     if (G.paused) drawPause(ctx);
+    drawNotice(ctx, dt);
 
     G.just = {};
     G.mouse.click = false;
@@ -205,10 +228,30 @@
     if (G.btn(W / 2 - 110, 280, 220, 44, 'Продолжить')) G.paused = false;
     if (G.btn(W / 2 - 110, 336, 220, 44, 'В главное меню')) { G.paused = false; G.go('menu'); }
     if (G.fullscreenAvailable() &&
-        G.btn(W / 2 - 110, 392, 220, 38, G.isFullscreen() ? 'Выйти из полного экрана' : 'На весь экран (F)', { size: 15 })) {
+        G.btn(W / 2 - 110, 392, 220, 38, G.isBig() ? 'Выйти из полного экрана' : 'На весь экран (F)', { size: 15 })) {
       G.toggleFullscreen();
     }
     if (G.btn(W / 2 - 80, 442, 160, 34, G.muted ? 'Включить звук' : 'Выключить звук', { size: 14 })) G.muted = !G.muted;
+  }
+
+  /* ---------- всплывающая подсказка поверх игры ---------- */
+  G.noticeText = ''; G.noticeT = 0;
+  G.notice = function (text, secs) {
+    G.noticeText = text; G.noticeT = secs || 4;
+  };
+  function drawNotice(ctx, dt) {
+    if (G.noticeT <= 0) return;
+    G.noticeT -= dt;
+    const a = Math.min(1, G.noticeT);
+    ctx.save();
+    ctx.globalAlpha = a;
+    const lines = G.wrap(G.noticeText, 500, 16);
+    const h = 20 + lines.length * 22;
+    G.panel(W / 2 - 270, 12, 540, h, { fill: 'rgba(12,16,22,.92)' });
+    lines.forEach(function (l, i) {
+      G.text(l, W / 2, 36 + i * 22, { size: 16, align: 'center', color: '#ffe9b0' });
+    });
+    ctx.restore();
   }
 
   /* ---------- сцены ---------- */

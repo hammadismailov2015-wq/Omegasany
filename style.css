@@ -63,6 +63,26 @@ button.ui:focus-visible, canvas:focus-visible { outline: 3px solid #ffe9b0; outl
   opacity: .9;
 }
 
+
+/* запасной «полный экран»: игра на всю страницу (когда браузер
+   запрещает настоящий полноэкранный режим — например, во встроенной странице) */
+html.maxi-lock, html.maxi-lock body { overflow: hidden; }
+#stage.maxi {
+  position: fixed; inset: 0; z-index: 9999;
+  width: 100vw; height: 100vh; gap: 12px; padding: 0;
+  background: #06080d;
+  display: flex; align-items: center; justify-content: center;
+}
+#stage.maxi canvas#game {
+  width: min(100vw, calc(100vh * 16 / 9));
+  height: min(100vh, calc(100vw * 9 / 16));
+  max-width: 100vw; max-height: 100vh;
+  border: none; border-radius: 0; box-shadow: none;
+}
+#stage.maxi #pad {
+  position: absolute; left: 0; right: 0; bottom: 10px; opacity: .9;
+}
+
 /* ---------- экранные кнопки — только для тач-устройств ---------- */
 #pad {
   display: none; width: min(100vw - 16px, 1100px);
@@ -92,4 +112,9 @@ button.ui:focus-visible, canvas:focus-visible { outline: 3px solid #ffe9b0; outl
   }
   #stage:fullscreen #pad,
   #stage:-webkit-full-screen #pad { position: static; opacity: 1; }
+  #stage.maxi canvas#game {
+    width: min(100vw, calc((100vh - 120px) * 16 / 9));
+    height: auto; max-width: 100vw; max-height: calc(100vh - 120px);
+  }
+  #stage.maxi #pad { position: static; opacity: 1; }
 }

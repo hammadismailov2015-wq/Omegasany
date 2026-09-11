@@ -65,7 +65,7 @@
       if (G.btn(G.W / 2 + 5, 442, 145, 42, G.muted ? 'Звук: выкл' : 'Звук: вкл', { size: 16 })) G.muted = !G.muted;
 
       if (G.fullscreenAvailable() &&
-          G.btn(G.W - 196, 20, 176, 38, G.isFullscreen() ? 'Выйти (F)' : '⛶  На весь экран', { size: 15 })) {
+          G.btn(G.W - 196, 20, 176, 38, G.isBig() ? 'Выйти (F)' : '⛶  На весь экран', { size: 15 })) {
         G.toggleFullscreen();
       }
       G.text('← → ↑ ↓ — движение · Пробел — действие · F — весь экран · Esc — пауза',
