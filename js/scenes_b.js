@@ -335,8 +335,9 @@
         ctx.fillRect(i * 70, -460, 3, 920);
       }
       ctx.fillStyle = '#8492a1'; ctx.fillRect(-460, 150, 920, 310);
-      ART.cactus(ctx, -170, 176, 0.8, { pot: true, flower: true });
-      ART.sanya(ctx, 52, 168, 1.9, { flip: true });
+      ART.cactus(ctx, -180, 150, 0.55, { pot: true, flower: true });
+      ART.sanya(ctx, 40, 150, 1.05, { flip: true });
+      G.text('Саня', 40, 172, { size: 12, align: 'center', color: '#41505f', shadow: false });
       ctx.restore();
       // мутное стекло и блик
       ctx.fillStyle = 'rgba(190,220,238,.16)';
@@ -376,18 +377,21 @@
       }
       ctx.restore();
 
-      // держимся руками за барабан
-      ART.handFP(ctx, 186, 572, 2.3, { tool: 'none', swing: 0.12 + Math.sin(this.t * 6) * 0.05 });
+      // руки Сани: одна держит, другая льёт порошок прямо в глаза
+      const hold = Math.sin(this.t * 3) * 0.06;
+      ART.handFP(ctx, 118, 486, 2.8, { who: 'sanya', tool: 'none', rot: 0.55 + hold, swing: 0 });
       ctx.save();
       ctx.translate(G.W, 0); ctx.scale(-1, 1);
-      ART.handFP(ctx, 176, 578, 2.3, { tool: 'none', swing: 0.1 + Math.cos(this.t * 6) * 0.05 });
+      ART.handFP(ctx, 150, 236, 2.6, { who: 'sanya', tool: 'none', rot: 0.9 - hold, swing: 0 });
       ctx.restore();
+      ART.detergent(ctx, 742, 150, 1.15, 2.5 + Math.sin(this.t * 3) * 0.05, this.t,
+        { x: cx + 40, y: cy + 30 });
 
-      // порошок в глазах
-      ctx.fillStyle = 'rgba(230,255,235,.4)';
+      // порошок разъедает глаза — мыльные пятна по краям обзора
       for (let i = 0; i < 5; i++) {
         const a = i * 1.9 + Math.sin(this.t + i) * 0.2;
         const px2 = cx + Math.cos(a) * 420, py2 = cy + Math.sin(a) * 250;
+        ctx.fillStyle = 'rgba(215,255,225,.42)';
         ctx.beginPath();
         ctx.ellipse(px2, py2, 60 + Math.sin(this.t * 2 + i) * 8, 42, a, 0, Math.PI * 2);
         ctx.fill();
@@ -400,6 +404,7 @@
         G.bar(cx - 50, 118, 100, 8, this.qte.time / 1.5, { color: '#ffd35e' });
       }
       G.text('Осталось продержаться: ' + this.left, G.W - 30, 40, { size: 17, align: 'right', color: '#eaf2fa' });
+      G.text('ты в барабане · за стеклом Саня', 30, 40, { size: 15, color: '#cfe0ee' });
 
       if (this.dizzy > 0) {
         ctx.fillStyle = 'rgba(120,200,120,' + this.dizzy * 0.35 + ')';

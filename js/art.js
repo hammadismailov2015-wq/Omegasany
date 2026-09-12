@@ -298,13 +298,14 @@
     o = o || {};
     s = s || 1;
     const px = Math.max(2, Math.round(4.9 * s));
-    const pal = o.dirty === false ? P_OMEGA : P_OMEGA_DIRTY;
-    const cv = sprite('fp-fist' + (o.dirty === false ? 'c' : 'd'), FP_FIST, pal, px);
+    const sanya = o.who === 'sanya';
+    const pal = sanya ? P_SANYA : (o.dirty === false ? P_OMEGA : P_OMEGA_DIRTY);
+    const cv = sprite('fp-fist' + (sanya ? 's' : (o.dirty === false ? 'c' : 'd')), FP_FIST, pal, px);
     const swing = o.swing || 0;                 // 0 — замах, 1 — удар
     const dx = -swing * 40, dy = -swing * 52;
     ctx.save();
     ctx.translate(x + dx, y + dy);
-    ctx.rotate(-0.35 - swing * 0.5);
+    ctx.rotate((o.rot === undefined ? -0.35 : o.rot) - swing * 0.5);
     ctx.imageSmoothingEnabled = false;
     const w = cv.logicalW, h = cv.logicalH;
     ctx.drawImage(cv, Math.round(-w / 2), Math.round(-h + px), w, h);
@@ -325,6 +326,67 @@
       ctx.fillStyle = '#9aa2ad';
       ctx.fillRect(-px * 0.75, -h + px * 0.9, px * 1.5, px * 0.5);
     }
+    ctx.restore();
+  };
+
+
+  /* бутылка средства для стирки и струя из неё */
+  ART.detergent = function (ctx, x, y, s, rot, t, pour) {
+    ctx.save();
+    ctx.translate(x, y); ctx.scale(s, s); ctx.rotate(rot || 0);
+    // тело бутылки
+    const g = ctx.createLinearGradient(-26, 0, 26, 0);
+    g.addColorStop(0, '#2f7fb8'); g.addColorStop(.4, '#8fd0f0'); g.addColorStop(1, '#1f5f8f');
+    ctx.fillStyle = g;
+    rr(ctx, -26, -54, 52, 76, 12); ctx.fill();
+    ctx.strokeStyle = 'rgba(10,30,50,.5)'; ctx.lineWidth = 2; ctx.stroke();
+    // горлышко и крышка
+    ctx.fillStyle = '#1f5f8f'; ctx.fillRect(-11, -72, 22, 20);
+    ctx.fillStyle = '#e8f4fb'; rr(ctx, -14, -82, 28, 12, 4); ctx.fill();
+    // этикетка
+    ctx.fillStyle = '#f2f6f8'; rr(ctx, -20, -40, 40, 34, 5); ctx.fill();
+    ctx.fillStyle = '#2f7fb8';
+    rr(ctx, -15, -35, 30, 6, 3); ctx.fill();
+    rr(ctx, -15, -25, 22, 5, 2); ctx.fill();
+    ctx.fillStyle = '#7fd0a0';
+    ctx.beginPath(); ctx.arc(0, -14, 7, 0, 7); ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,.35)';
+    rr(ctx, -22, -50, 8, 60, 4); ctx.fill();
+    ctx.restore();
+    if (!pour) return;
+    // струя из горлышка прямо в «глаза» игрока (pour = {x, y})
+    const a = (rot || 0) - Math.PI / 2;
+    const mx = x + Math.cos(a) * 84 * s, my = y + Math.sin(a) * 84 * s;
+    const tx = pour.x, ty = pour.y;
+    const nx = -(ty - my), ny = (tx - mx);
+    const len = Math.hypot(nx, ny) || 1;
+    const wob = Math.sin(t * 6) * 12;
+    const cxp = (mx + tx) / 2 + (nx / len) * (40 + wob);
+    const cyp = (my + ty) / 2 + (ny / len) * (40 + wob);
+    ctx.save();
+    const grd = ctx.createLinearGradient(mx, my, tx, ty);
+    grd.addColorStop(0, 'rgba(200,255,215,.95)');
+    grd.addColorStop(1, 'rgba(150,235,180,.25)');
+    ctx.fillStyle = grd;
+    const w0 = 9 * s, w1 = 30 * s;
+    ctx.beginPath();
+    ctx.moveTo(mx - (nx / len) * w0, my - (ny / len) * w0);
+    ctx.quadraticCurveTo(cxp, cyp, tx - (nx / len) * w1, ty - (ny / len) * w1);
+    ctx.lineTo(tx + (nx / len) * w1, ty + (ny / len) * w1);
+    ctx.quadraticCurveTo(cxp, cyp, mx + (nx / len) * w0, my + (ny / len) * w0);
+    ctx.closePath(); ctx.fill();
+    // капли вдоль струи и брызги в глаза
+    for (let i = 0; i < 8; i++) {
+      const k = ((t * 1.5 + i / 8) % 1);
+      const px2 = (1 - k) * (1 - k) * mx + 2 * (1 - k) * k * cxp + k * k * tx;
+      const py2 = (1 - k) * (1 - k) * my + 2 * (1 - k) * k * cyp + k * k * ty;
+      ctx.fillStyle = 'rgba(225,255,232,' + (0.85 - k * 0.55) + ')';
+      ctx.beginPath(); ctx.arc(px2, py2, 4 + k * 10, 0, 7); ctx.fill();
+    }
+    ctx.fillStyle = 'rgba(215,255,228,.5)';
+    ctx.beginPath();
+    ctx.ellipse(tx, ty, 70 + Math.sin(t * 5) * 8, 46 + Math.cos(t * 4) * 6, 0, 0, Math.PI * 2);
+    ctx.fill();
     ctx.restore();
   };
 
