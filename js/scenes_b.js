@@ -20,6 +20,7 @@
       this.zone = 0.42; this.zoneW = 0.16;
       this.shake = 0;
       this.flash = 0;
+      this.hit = 0;
       this.msg = ''; this.msgT = 0;
       this.mile = { c15: this.progress >= 15, c35: this.progress >= 35, c60: false };
       this.sleeping = 0;
@@ -39,6 +40,7 @@
     },
 
     strike: function () {
+      this.hit = 1;                     // рука пошла вперёд, гаснет в update
       const hitQ = Math.abs(this.swing - (this.zone + this.zoneW / 2));
       const good = this.swing > this.zone && this.swing < this.zone + this.zoneW;
       const near = hitQ < this.zoneW;
@@ -106,6 +108,7 @@
       if (this.shake > 0) this.shake -= dt;
       if (this.flash > 0) this.flash -= dt;
       if (this.msgT > 0) this.msgT -= dt;
+      if (this.hit > 0) this.hit = Math.max(0, this.hit - dt * 5);
       if (G.dlg.active) { G.dlg.update(dt); return; }
       if (this.mode === 'dead') {
         if (G.just['Space'] || G.mouse.click) {
@@ -163,14 +166,16 @@
       ctx.fillStyle = 'rgba(255,255,255,.6)';
       ctx.beginPath(); ctx.arc(617, 146, 2, 0, 7); ctx.fill();
 
-      // Омега рогаликом
+      // вид от первого лица: своя рука с инструментом, Лысый рядом
       const sleepNow = this.sleeping > 0;
-      ART.omega(ctx, 296, 412, 1.7, { pose: 'ball', dirty: true, sleep: sleepNow });
-      // Лысый
-      ART.stone(ctx, 398, 420, 17, DATA.balid.color, { face: true, sad: this.guilt > 40 });
-      if (this.tool === 'stone') {
-        ctx.strokeStyle = 'rgba(255,120,110,.8)'; ctx.lineWidth = 2;
-        ctx.beginPath(); ctx.arc(398, 414, 27, 0, Math.PI * 2); ctx.stroke();
+      if (!sleepNow) {
+        if (this.tool !== 'stone') {
+          ART.stone(ctx, 118, 432, 19, DATA.balid.color, { face: true, sad: this.guilt > 40 });
+          G.text('Лысый', 118, 468, { size: 13, align: 'center', color: '#e2a79c' });
+        }
+        ART.handFP(ctx, 848, 560, 2.1, {
+          tool: this.tool, swing: Math.max(0, this.hit || 0), guilt: this.guilt
+        });
       }
       ctx.restore();
 

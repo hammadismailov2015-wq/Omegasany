@@ -173,6 +173,22 @@
   OM_BALL_SLEEP[4] = '...hsssssssccccccc';
   OM_BALL_SLEEP[5] = '...hsessessccccccc';
 
+  // кулак с рукавом — вид от первого лица (10x12)
+  const FP_FIST = [
+    '...ssss...',
+    '..ssssss..',
+    '.ssssssss.',
+    '.ssssssss.',
+    '.sssssssS.',
+    '.ssssssSS.',
+    '.sssssSSS.',
+    '.cccccccc.',
+    '.cccccccC.',
+    '.ccccccCC.',
+    '.ccccccCC.',
+    '.CCCCCCCC.'
+  ];
+
   const P_OMEGA = {
     H: '#54361d', h: '#6b4a2a', s: '#f3cda3', S: '#d8a97e', e: '#241d16',
     m: '#a35b52', c: '#5f8f46', C: '#47702f', p: '#3b4152', P: '#2b3140', b: '#2a2119'
@@ -274,6 +290,42 @@
     const cv = sprite(key, rows, pal, px);
     if (o.shadow !== false) groundShadow(ctx, x, y, (ball ? 8 : 6) * px);
     drawSprite(ctx, cv, x, y, o.flip, px);
+  };
+
+
+  /* рука Омеги от первого лица: держит гвоздь или любимый камень */
+  ART.handFP = function (ctx, x, y, s, o) {
+    o = o || {};
+    s = s || 1;
+    const px = Math.max(2, Math.round(4.9 * s));
+    const pal = o.dirty === false ? P_OMEGA : P_OMEGA_DIRTY;
+    const cv = sprite('fp-fist' + (o.dirty === false ? 'c' : 'd'), FP_FIST, pal, px);
+    const swing = o.swing || 0;                 // 0 — замах, 1 — удар
+    const dx = -swing * 40, dy = -swing * 52;
+    ctx.save();
+    ctx.translate(x + dx, y + dy);
+    ctx.rotate(-0.35 - swing * 0.5);
+    ctx.imageSmoothingEnabled = false;
+    const w = cv.logicalW, h = cv.logicalH;
+    ctx.drawImage(cv, Math.round(-w / 2), Math.round(-h + px), w, h);
+    // инструмент в кулаке
+    if (o.tool === 'stone') {
+      ART.stone(ctx, 0, -h + px * 3, px * 3.4, DATA.balid.color, { face: true, sad: o.guilt > 40, shadow: false });
+    } else {
+      // гвоздь: тонкий стержень, шляпка снизу, остриё вверх
+      const g = ctx.createLinearGradient(-px * 0.3, 0, px * 0.3, 0);
+      g.addColorStop(0, '#5c626b'); g.addColorStop(.45, '#cdd3da'); g.addColorStop(1, '#4e545c');
+      ctx.fillStyle = g;
+      ctx.fillRect(-px * 0.28, -h - px * 2.6, px * 0.56, px * 3.6);
+      ctx.beginPath();
+      ctx.moveTo(-px * 0.28, -h - px * 2.6);
+      ctx.lineTo(px * 0.28, -h - px * 2.6);
+      ctx.lineTo(0, -h - px * 3.9);
+      ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#9aa2ad';
+      ctx.fillRect(-px * 0.75, -h + px * 0.9, px * 1.5, px * 0.5);
+    }
+    ctx.restore();
   };
 
   ART.sanya = function (ctx, x, y, s, o) {
