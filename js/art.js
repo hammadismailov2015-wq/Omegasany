@@ -112,6 +112,18 @@
     '....bb..bb....',
     '...bbb..bbb...'
   ];
+  // голова Сани — прижался снаружи к стеклу люка
+  const SA_HEAD = SA_STAND.slice(0, 8);
+  // свои колени, подтянутые к груди (видно из-под подбородка)
+  const OM_KNEE = [
+    '..pppp..',
+    '.pppppp.',
+    'pppppppp',
+    'pppppppp',
+    'pppppppp',
+    'ppppppPP'
+  ];
+
   const LEGS_A = [
     '....pppppp....',
     '...ppp...pp...',
@@ -404,6 +416,30 @@
     if (o.shadow !== false) groundShadow(ctx, x, y, 6 * px);
     drawSprite(ctx, cv, x, y, o.flip, px);
     if (o.cactus) ART.cactus(ctx, x + (o.flip ? -34 : 34) * s, y, 0.34 * s, { pot: true, flower: true });
+  };
+
+
+  /* лицо Сани, вплющенное в стекло снаружи */
+  ART.sanyaFace = function (ctx, x, y, s) {
+    const px = Math.max(2, Math.round(9 * (s || 1)));
+    const cv = sprite('sa-head', SA_HEAD, P_SANYA, px);
+    ctx.save();
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(cv, Math.round(x - cv.logicalW / 2), Math.round(y - cv.logicalH / 2),
+      cv.logicalW, cv.logicalH);
+    ctx.restore();
+  };
+
+  /* свои колени в нижней части обзора */
+  ART.kneesFP = function (ctx, x, y, s, spread) {
+    const px = Math.max(2, Math.round(9 * (s || 1)));
+    const cv = sprite('om-knee', OM_KNEE, P_OMEGA_DIRTY, px);
+    const w = cv.logicalW, h = cv.logicalH;
+    ctx.save();
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(cv, Math.round(x - (spread || 90) - w / 2), Math.round(y), w, h);
+    ctx.drawImage(cv, Math.round(x + (spread || 90) - w / 2), Math.round(y + 10), w, h);
+    ctx.restore();
   };
 
   ART.portrait = function (ctx, who, x, y, s) {

@@ -335,9 +335,10 @@
         ctx.fillRect(i * 70, -460, 3, 920);
       }
       ctx.fillStyle = '#8492a1'; ctx.fillRect(-460, 150, 920, 310);
-      ART.cactus(ctx, -180, 150, 0.55, { pot: true, flower: true });
-      ART.sanya(ctx, 40, 150, 1.05, { flip: true });
-      G.text('Саня', 40, 172, { size: 12, align: 'center', color: '#41505f', shadow: false });
+      // Саня снаружи прижался лицом к стеклу — голова не влезает в люк
+      ctx.fillStyle = 'rgba(235,245,250,.3)';
+      ctx.beginPath(); ctx.ellipse(10, 150, 96, 40, 0, 0, Math.PI * 2); ctx.fill();
+      ART.sanyaFace(ctx, 6, -6, 3.1);
       ctx.restore();
       // мутное стекло и блик
       ctx.fillStyle = 'rgba(190,220,238,.16)';
@@ -377,6 +378,12 @@
       }
       ctx.restore();
 
+      // свои колени, подтянутые к груди: внутри барабана сидишь ты
+      ctx.save();
+      ctx.translate(cx, cy); ctx.rotate(Math.sin(spin) * 0.05);
+      ART.kneesFP(ctx, 0, 108, 1.8, 104);
+      ctx.restore();
+
       // руки Сани: одна держит, другая льёт порошок прямо в глаза
       const hold = Math.sin(this.t * 3) * 0.06;
       ART.handFP(ctx, 118, 486, 2.8, { who: 'sanya', tool: 'none', rot: 0.55 + hold, swing: 0 });
@@ -404,7 +411,7 @@
         G.bar(cx - 50, 118, 100, 8, this.qte.time / 1.5, { color: '#ffd35e' });
       }
       G.text('Осталось продержаться: ' + this.left, G.W - 30, 40, { size: 17, align: 'right', color: '#eaf2fa' });
-      G.text('ты в барабане · за стеклом Саня', 30, 40, { size: 15, color: '#cfe0ee' });
+      G.text('ты — Омега, внутри барабана · Саня снаружи', 30, 40, { size: 15, color: '#cfe0ee' });
 
       if (this.dizzy > 0) {
         ctx.fillStyle = 'rgba(120,200,120,' + this.dizzy * 0.35 + ')';
