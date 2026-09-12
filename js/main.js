@@ -60,7 +60,7 @@
       const label = done ? 'Играть заново — с 1 главы' :
         (G.save.chapter > 1 ? 'Продолжить — глава ' + prog : 'Начать игру');
       if (G.btn(G.W / 2 - 150, 330, 300, 52, label, { size: done ? 18 : 21 })) G.startChapter(this.target());
-      if (G.btn(G.W / 2 - 150, 392, 300, 42, done ? 'Выбор главы (пройдено всё)' : 'Выбор главы', { size: done ? 16 : 17 })) G.go('chapters');
+      if (G.btn(G.W / 2 - 150, 392, 300, 42, 'Выбор главы — любая из 10', { size: 17 })) G.go('chapters');
       if (G.btn(G.W / 2 - 150, 442, 145, 42, 'Коллекция', { size: 16 })) G.go('collection');
       if (G.btn(G.W / 2 + 5, 442, 145, 42, G.muted ? 'Звук: выкл' : 'Звук: вкл', { size: 16 })) G.muted = !G.muted;
 
@@ -85,15 +85,21 @@
     draw: function (ctx) {
       ART.forestBg(ctx, this.t);
       ctx.fillStyle = 'rgba(10,14,20,.52)'; ctx.fillRect(0, 0, G.W, G.H);
-      G.text('ВЫБОР ГЛАВЫ', G.W / 2, 66, { size: 34, align: 'center', color: '#ffe9b0' });
+      G.text('ВЫБОР ГЛАВЫ', G.W / 2, 56, { size: 32, align: 'center', color: '#ffe9b0' });
+      G.text('любую главу можно открыть сразу · ✓ — уже пройдена',
+        G.W / 2, 80, { size: 14, align: 'center', color: '#c9d3de' });
       for (let i = 0; i < G.CHAPTERS.length; i++) {
         const c = G.CHAPTERS[i];
         const col = i % 2, row = Math.floor(i / 2);
-        const x = 80 + col * 420, y = 100 + row * 66;
-        const locked = c.n > G.save.chapter;
-        if (G.btn(x, y, 400, 52, (locked ? '🔒 ' : c.n + '. ') + c.name, { disabled: locked, size: 19 })) {
+        const x = 80 + col * 420, y = 96 + row * 64;
+        const passed = c.n < G.save.chapter;
+        if (G.btn(x, y, 400, 52, (passed ? '✓ ' : '') + c.n + '. ' + c.name, { size: 19 })) {
           G.startChapter(c.n);
         }
+      }
+      if (!G.storageOK) {
+        G.text('Прогресс не сохраняется в этом окне — открой игру в отдельной вкладке',
+          G.W / 2, 452, { size: 13, align: 'center', color: '#e8c08a' });
       }
       if (G.btn(G.W / 2 - 100, 466, 200, 44, 'Назад')) G.go('menu');
       if (G.btn(G.W - 190, 24, 166, 34, 'Сбросить прогресс', { size: 14 })) { G.reset(); G.go('menu'); }

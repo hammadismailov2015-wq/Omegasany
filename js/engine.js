@@ -17,6 +17,7 @@
   /* ---------- сохранение ---------- */
   const SAVE_KEY = 'omega_stones_save_v1';
   G.save = { chapter: 1, stones: [], flags: {} };
+  G.storageOK = true;
   G.load = function () {
     try {
       const raw = localStorage.getItem(SAVE_KEY);
@@ -28,10 +29,11 @@
           G.save.flags = s.flags || {};
         }
       }
-    } catch (e) { /* приватный режим — играем без сохранения */ }
+    } catch (e) { G.storageOK = false; /* приватный режим — играем без сохранения */ }
   };
   G.store = function () {
-    try { localStorage.setItem(SAVE_KEY, JSON.stringify(G.save)); } catch (e) {}
+    try { localStorage.setItem(SAVE_KEY, JSON.stringify(G.save)); }
+    catch (e) { G.storageOK = false; }
   };
   G.unlock = function (chapter) {
     if (chapter > G.save.chapter) G.save.chapter = chapter;
