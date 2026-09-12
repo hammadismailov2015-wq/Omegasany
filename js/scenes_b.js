@@ -286,79 +286,126 @@
       ], function () { G.finishChapter(5); });
     },
     draw: function (ctx) {
-      const bgg = ctx.createRadialGradient(G.W / 2, G.H / 2, 60, G.W / 2, G.H / 2, 560);
-      bgg.addColorStop(0, '#1d2a3d'); bgg.addColorStop(1, '#080c14');
-      ctx.fillStyle = bgg; ctx.fillRect(0, 0, G.W, G.H);
-      const cx = G.W / 2, cy = G.H / 2 - 10;
-      // корпус машинки
-      const body = ctx.createLinearGradient(cx - 200, 0, cx + 200, 0);
-      body.addColorStop(0, '#9fa8b4'); body.addColorStop(.35, '#eef2f6');
-      body.addColorStop(.75, '#cfd6de'); body.addColorStop(1, '#8b939f');
-      ctx.fillStyle = body;
-      G.rr(ctx, cx - 200, cy - 190, 400, 400, 22); ctx.fill();
-      const panel = ctx.createLinearGradient(0, cy - 190, 0, cy - 134);
-      panel.addColorStop(0, '#e4e9ef'); panel.addColorStop(1, '#aab2bd');
-      ctx.fillStyle = panel;
-      G.rr(ctx, cx - 200, cy - 190, 400, 56, 18); ctx.fill();
-      ctx.fillStyle = '#3d4655';
-      [-140, -104].forEach(function (dx) {
-        ctx.beginPath(); ctx.arc(cx + dx, cy - 162, 13, 0, 7); ctx.fill();
-      });
-      ctx.fillStyle = '#7fd18a';
-      ctx.beginPath(); ctx.arc(cx + 150, cy - 162, 7, 0, 7); ctx.fill();
-      ctx.fillStyle = 'rgba(255,255,255,.45)';
-      ctx.fillRect(cx - 70, cy - 172, 170, 20);
-      const ring = ctx.createRadialGradient(cx - 40, cy - 30, 20, cx, cy + 10, 160);
-      ring.addColorStop(0, '#6b7686'); ring.addColorStop(1, '#2c3442');
-      ctx.fillStyle = ring;
-      ctx.beginPath(); ctx.arc(cx, cy + 10, 152, 0, Math.PI * 2); ctx.fill();
-      // барабан
+      const cx = G.W / 2, cy = G.H / 2;
+      const spin = this.spin;
+
+      // мы внутри барабана и крутимся вместе с ним
+      const g = ctx.createRadialGradient(cx, cy, 60, cx, cy, 580);
+      g.addColorStop(0, '#7d94a6'); g.addColorStop(.45, '#46586a'); g.addColorStop(1, '#1e2833');
+      ctx.fillStyle = g; ctx.fillRect(0, 0, G.W, G.H);
+
+      // перфорация барабана
       ctx.save();
-      ctx.beginPath(); ctx.arc(cx, cy + 10, 136, 0, Math.PI * 2); ctx.clip();
-      ctx.fillStyle = '#7fb7d8'; ctx.fillRect(cx - 150, cy - 130, 300, 300);
-      // пена (под Омегой)
-      for (let i = 0; i < 12; i++) {
-        const a = this.t * 1.4 + i;
-        ctx.fillStyle = 'rgba(255,255,255,.45)';
+      ctx.translate(cx, cy); ctx.rotate(spin * 0.3);
+      for (let ring = 0; ring < 7; ring++) {
+        const r = 190 + ring * 58, n = 12 + ring * 5;
+        for (let i = 0; i < n; i++) {
+          const a = i * 2 * Math.PI / n + ring * 0.35;
+          const hx = Math.cos(a) * r, hy = Math.sin(a) * r * 0.92;
+          ctx.fillStyle = 'rgba(8,12,17,.85)';
+          ctx.beginPath(); ctx.arc(hx, hy, 7, 0, 7); ctx.fill();
+          ctx.strokeStyle = 'rgba(255,255,255,.14)'; ctx.lineWidth = 2;
+          ctx.beginPath(); ctx.arc(hx, hy - 1, 7, Math.PI, 0); ctx.stroke();
+        }
+      }
+      // рёбра барабана
+      ctx.strokeStyle = 'rgba(190,205,220,.25)'; ctx.lineWidth = 16; ctx.lineCap = 'round';
+      for (let i = 0; i < 3; i++) {
+        const a = spin * 0 + i * Math.PI * 2 / 3;
         ctx.beginPath();
-        ctx.arc(cx + Math.cos(a) * (40 + (i % 5) * 20), cy + 10 + Math.sin(a * 1.3) * (40 + (i % 4) * 24), 7 + (i % 3) * 3, 0, 7);
+        ctx.moveTo(Math.cos(a) * 210, Math.sin(a) * 200);
+        ctx.lineTo(Math.cos(a) * 520, Math.sin(a) * 500);
+        ctx.stroke();
+      }
+      ctx.restore();
+
+      // люк: смотрим наружу, и мир за стеклом крутится
+      const R = 178;
+      ctx.save();
+      ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2); ctx.clip();
+      ctx.save();
+      ctx.translate(cx, cy); ctx.rotate(-spin);
+      // комната Сани за стеклом
+      const room = ctx.createLinearGradient(0, -420, 0, 420);
+      room.addColorStop(0, '#f3f7fb'); room.addColorStop(.55, '#dbe4ee'); room.addColorStop(1, '#a9b6c4');
+      ctx.fillStyle = room; ctx.fillRect(-460, -460, 920, 920);
+      ctx.fillStyle = '#9aa7b5';
+      for (let i = -5; i <= 5; i++) {
+        ctx.fillRect(-460, i * 70, 920, 3);
+        ctx.fillRect(i * 70, -460, 3, 920);
+      }
+      ctx.fillStyle = '#8492a1'; ctx.fillRect(-460, 150, 920, 310);
+      ART.cactus(ctx, -170, 176, 0.8, { pot: true, flower: true });
+      ART.sanya(ctx, 52, 168, 1.9, { flip: true });
+      ctx.restore();
+      // мутное стекло и блик
+      ctx.fillStyle = 'rgba(190,220,238,.16)';
+      ctx.fillRect(cx - R, cy - R, R * 2, R * 2);
+      ctx.fillStyle = 'rgba(255,255,255,.22)';
+      ctx.beginPath();
+      ctx.ellipse(cx - 58, cy - 62, 62, 38, -0.7 + spin * 0.2, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+
+      // резинка люка
+      const seal = ctx.createLinearGradient(0, cy - R, 0, cy + R);
+      seal.addColorStop(0, '#2f3742'); seal.addColorStop(.5, '#59636f'); seal.addColorStop(1, '#1d232b');
+      ctx.strokeStyle = seal; ctx.lineWidth = 30;
+      ctx.beginPath(); ctx.arc(cx, cy, R + 14, 0, Math.PI * 2); ctx.stroke();
+      ctx.strokeStyle = 'rgba(255,255,255,.16)'; ctx.lineWidth = 4;
+      ctx.beginPath(); ctx.arc(cx, cy, R + 2, 0, Math.PI * 2); ctx.stroke();
+
+      // вода с порошком плещется вокруг нас
+      ctx.save();
+      ctx.translate(cx, cy); ctx.rotate(spin);
+      ctx.fillStyle = 'rgba(150,200,225,.5)';
+      ctx.beginPath();
+      ctx.moveTo(-600, 150 + Math.sin(this.t * 4) * 10);
+      for (let x = -600; x <= 600; x += 40) {
+        ctx.lineTo(x, 150 + Math.sin(x * 0.02 + this.t * 5) * 16);
+      }
+      ctx.lineTo(600, 600); ctx.lineTo(-600, 600); ctx.closePath(); ctx.fill();
+      for (let i = 0; i < 26; i++) {
+        const a = this.t * 1.6 + i * 1.7;
+        const bx = Math.cos(a) * (90 + (i % 6) * 62);
+        const by = Math.sin(a * 1.2) * (80 + (i % 5) * 58);
+        const r2 = 6 + (i % 4) * 5;
+        ctx.fillStyle = 'rgba(255,255,255,.5)';
+        ctx.beginPath(); ctx.arc(bx, by, r2, 0, 7); ctx.fill();
+        ctx.fillStyle = 'rgba(255,255,255,.75)';
+        ctx.beginPath(); ctx.arc(bx - r2 * .3, by - r2 * .35, r2 * .3, 0, 7); ctx.fill();
+      }
+      ctx.restore();
+
+      // держимся руками за барабан
+      ART.handFP(ctx, 186, 572, 2.3, { tool: 'none', swing: 0.12 + Math.sin(this.t * 6) * 0.05 });
+      ctx.save();
+      ctx.translate(G.W, 0); ctx.scale(-1, 1);
+      ART.handFP(ctx, 176, 578, 2.3, { tool: 'none', swing: 0.1 + Math.cos(this.t * 6) * 0.05 });
+      ctx.restore();
+
+      // порошок в глазах
+      ctx.fillStyle = 'rgba(230,255,235,.4)';
+      for (let i = 0; i < 5; i++) {
+        const a = i * 1.9 + Math.sin(this.t + i) * 0.2;
+        const px2 = cx + Math.cos(a) * 420, py2 = cy + Math.sin(a) * 250;
+        ctx.beginPath();
+        ctx.ellipse(px2, py2, 60 + Math.sin(this.t * 2 + i) * 8, 42, a, 0, Math.PI * 2);
         ctx.fill();
       }
-      ctx.save();
-      ctx.translate(cx, cy + 10);
-      ctx.rotate(this.spin);
-      ctx.strokeStyle = 'rgba(255,255,255,.45)'; ctx.lineWidth = 5;
-      for (let i = 0; i < 8; i++) {
-        const a = i * Math.PI / 4;
-        ctx.beginPath(); ctx.moveTo(Math.cos(a) * 60, Math.sin(a) * 60);
-        ctx.lineTo(Math.cos(a) * 130, Math.sin(a) * 130); ctx.stroke();
-      }
-      ART.omega(ctx, 0, 34, 1.3, { pose: 'ball', dirty: true, sad: true });
-      ctx.restore();
-      ctx.restore();
-      ctx.strokeStyle = '#222a36'; ctx.lineWidth = 10;
-      ctx.beginPath(); ctx.arc(cx, cy + 10, 145, 0, Math.PI * 2); ctx.stroke();
-      // блик на стекле
-      ctx.fillStyle = 'rgba(255,255,255,.18)';
-      ctx.beginPath();
-      ctx.ellipse(cx - 52, cy - 44, 54, 34, -0.7, 0, Math.PI * 2); ctx.fill();
-
-      ART.sanya(ctx, 96, 368, 1.15, { smug: true });
-      G.text('Саня', 96, 392, { size: 14, align: 'center', color: '#ffd98a' });
 
       if (this.qte) {
         const arrow = { ArrowLeft: '←', ArrowRight: '→', ArrowUp: '↑', ArrowDown: '↓' }[this.qte.key];
-        G.panel(cx - 60, 40, 120, 90, { fill: 'rgba(14,18,26,.9)' });
-        G.text(arrow, cx, 108, { size: 62, align: 'center', color: '#ffe9b0' });
-        G.bar(cx - 50, 122, 100, 8, this.qte.time / 1.5, { color: '#ffd35e' });
+        G.panel(cx - 60, 36, 120, 90, { fill: 'rgba(14,18,26,.9)' });
+        G.text(arrow, cx, 104, { size: 62, align: 'center', color: '#ffe9b0' });
+        G.bar(cx - 50, 118, 100, 8, this.qte.time / 1.5, { color: '#ffd35e' });
       }
-      G.text('Осталось продержаться: ' + this.left, G.W - 30, 40, { size: 17, align: 'right', color: '#cfd8e3' });
+      G.text('Осталось продержаться: ' + this.left, G.W - 30, 40, { size: 17, align: 'right', color: '#eaf2fa' });
 
       if (this.dizzy > 0) {
         ctx.fillStyle = 'rgba(120,200,120,' + this.dizzy * 0.35 + ')';
         ctx.fillRect(0, 0, G.W, G.H);
       }
-      ART.vignette(ctx, .6);
+      ART.vignette(ctx, .45);
       G.dlg.draw();
       G.chapterTitle(ctx, 5, 'Сон', this.t);
     }

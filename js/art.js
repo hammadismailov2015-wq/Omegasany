@@ -311,7 +311,7 @@
     // инструмент в кулаке
     if (o.tool === 'stone') {
       ART.stone(ctx, 0, -h + px * 3, px * 3.4, DATA.balid.color, { face: true, sad: o.guilt > 40, shadow: false });
-    } else {
+    } else if (o.tool === 'nail') {
       // гвоздь: тонкий стержень, шляпка снизу, остриё вверх
       const g = ctx.createLinearGradient(-px * 0.3, 0, px * 0.3, 0);
       g.addColorStop(0, '#5c626b'); g.addColorStop(.45, '#cdd3da'); g.addColorStop(1, '#4e545c');
