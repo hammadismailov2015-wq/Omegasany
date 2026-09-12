@@ -335,17 +335,34 @@
         ctx.fillRect(i * 70, -460, 3, 920);
       }
       ctx.fillStyle = '#8492a1'; ctx.fillRect(-460, 150, 920, 310);
-      // Саня снаружи прижался лицом к стеклу — голова не влезает в люк
+      // Саня снаружи: прижался лицом к стеклу и льёт порошок — всё ЗА стеклом
       ctx.fillStyle = 'rgba(235,245,250,.3)';
-      ctx.beginPath(); ctx.ellipse(10, 150, 96, 40, 0, 0, Math.PI * 2); ctx.fill();
-      ART.sanyaFace(ctx, 6, -6, 3.1);
+      ctx.beginPath(); ctx.ellipse(-64, 96, 84, 34, 0, 0, Math.PI * 2); ctx.fill();
+      ART.sanyaFace(ctx, -66, -44, 1.6);
+      const hold = Math.sin(this.t * 3) * 0.06;
+      ART.handFP(ctx, 126, 168, 1.5, { who: 'sanya', tool: 'none', rot: -0.5 + hold, swing: 0 });
+      ART.detergent(ctx, 118, -104, 0.72, 2.35 + Math.sin(this.t * 3) * 0.05, this.t, { x: 6, y: 30 });
+      // средство растекается по стеклу
+      ctx.fillStyle = 'rgba(205,255,220,.45)';
+      for (let i = 0; i < 4; i++) {
+        const sx2 = -30 + i * 34, len2 = 70 + Math.sin(this.t * 2 + i) * 18;
+        ctx.beginPath();
+        ctx.moveTo(sx2, 30);
+        ctx.quadraticCurveTo(sx2 + 8, 30 + len2 * .6, sx2 - 4, 30 + len2);
+        ctx.lineTo(sx2 + 14, 30 + len2 * .96);
+        ctx.quadraticCurveTo(sx2 + 22, 30 + len2 * .5, sx2 + 14, 30);
+        ctx.closePath(); ctx.fill();
+      }
       ctx.restore();
       // мутное стекло и блик
-      ctx.fillStyle = 'rgba(190,220,238,.16)';
+      ctx.fillStyle = 'rgba(190,220,238,.22)';
       ctx.fillRect(cx - R, cy - R, R * 2, R * 2);
-      ctx.fillStyle = 'rgba(255,255,255,.22)';
+      ctx.fillStyle = 'rgba(255,255,255,.26)';
       ctx.beginPath();
       ctx.ellipse(cx - 58, cy - 62, 62, 38, -0.7 + spin * 0.2, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,.14)';
+      ctx.beginPath();
+      ctx.ellipse(cx + 46, cy + 58, 92, 22, -0.7 + spin * 0.2, 0, Math.PI * 2); ctx.fill();
       ctx.restore();
 
       // резинка люка
@@ -378,21 +395,12 @@
       }
       ctx.restore();
 
-      // свои колени, подтянутые к груди: внутри барабана сидишь ты
-      ctx.save();
-      ctx.translate(cx, cy); ctx.rotate(Math.sin(spin) * 0.05);
-      ART.kneesFP(ctx, 0, 108, 1.8, 104);
-      ctx.restore();
-
-      // руки Сани: одна держит, другая льёт порошок прямо в глаза
-      const hold = Math.sin(this.t * 3) * 0.06;
-      ART.handFP(ctx, 118, 486, 2.8, { who: 'sanya', tool: 'none', rot: 0.55 + hold, swing: 0 });
+      // свои руки: держимся за барабан изнутри (рукав зелёный — это Омега)
+      ART.handFP(ctx, 150, 566, 2.4, { tool: 'none', rot: 0.45 + Math.sin(this.t * 6) * 0.06, swing: 0 });
       ctx.save();
       ctx.translate(G.W, 0); ctx.scale(-1, 1);
-      ART.handFP(ctx, 150, 236, 2.6, { who: 'sanya', tool: 'none', rot: 0.9 - hold, swing: 0 });
+      ART.handFP(ctx, 142, 572, 2.4, { tool: 'none', rot: 0.5 + Math.cos(this.t * 6) * 0.06, swing: 0 });
       ctx.restore();
-      ART.detergent(ctx, 742, 150, 1.15, 2.5 + Math.sin(this.t * 3) * 0.05, this.t,
-        { x: cx + 40, y: cy + 30 });
 
       // порошок разъедает глаза — мыльные пятна по краям обзора
       for (let i = 0; i < 5; i++) {
@@ -411,7 +419,7 @@
         G.bar(cx - 50, 118, 100, 8, this.qte.time / 1.5, { color: '#ffd35e' });
       }
       G.text('Осталось продержаться: ' + this.left, G.W - 30, 40, { size: 17, align: 'right', color: '#eaf2fa' });
-      G.text('ты — Омега, внутри барабана · Саня снаружи', 30, 40, { size: 15, color: '#cfe0ee' });
+      G.text('ты — Омега, внутри барабана · Саня за стеклом', 30, 40, { size: 15, color: '#cfe0ee' });
 
       if (this.dizzy > 0) {
         ctx.fillStyle = 'rgba(120,200,120,' + this.dizzy * 0.35 + ')';
